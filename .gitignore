@@ -1,0 +1,13 @@
+Исходные_файлы/
+файлы (1).zip
+
+*.log
+*.idea
+*.old
+
+.mypy_cache/
+__pycache__/
+.vscode/
+.venv/
+venv2/
+.venv2/
