@@ -1,10 +1,11 @@
-Исходные_файлы/
-файлы (1).zip
 
 *.log
 *.idea
 *.old
 
+.csv
+
+data/
 .mypy_cache/
 __pycache__/
 .vscode/
