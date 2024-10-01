@@ -1,33 +1,19 @@
 import pandas as pd
 
 
-def clean_age(df):
-    df["Age"] = pd.to_numeric(df["Age"], errors="coerce")
-    df.loc[(df["Age"] < 18) | (df["Age"] > 90), "Age"] = pd.NA
+def analyze_age(df):
+    min_age = round(df["Age"].min())
+    max_age = round(df["Age"].max())
+    mean_age = round(df["Age"].mean())
+    return min_age, max_age, mean_age
+
+
+def create_age_ranges(df):
+    bins = [18, 25, 35, 45, 55]
+    labels = ["18-25", "26-35", "36-45", "46-55"]
+
+    df["Age_Group"] = pd.cut(df["Age"], bins=bins, labels=labels, right=True)
     return df
-
-
-def clean():
-    df = pd.read_csv(
-        filepath_or_buffer="./data/test.csv",
-        header=0,
-        delimiter=",",
-        encoding="utf-8",
-    )
-    # df["Age"] = pd.to_numeric(df["Age"], errors="coerce")
-    # df.loc[(df["Age"] < 18) | (df["Age"] > 90), "Age"] = pd.NA
-    clean_age(df)
-    temp_filepath = "/tmp/test_data.csv"
-    df.to_csv(temp_filepath, index=False)
-    return temp_filepath
-
-
-def analyze_age():
-    pass
-
-
-def create_age_ranges():
-    pass
 
 
 def analyze_income():

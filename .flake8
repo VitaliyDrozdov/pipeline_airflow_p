@@ -1,4 +1,8 @@
 [flake8]
 max-line-length = 79
 extend-ignore = E203
-per-file-ignores = schema.py: E501
+
+
+per-file-ignores =
+    bibinet/settings.py: E501
+    clean.py: E501

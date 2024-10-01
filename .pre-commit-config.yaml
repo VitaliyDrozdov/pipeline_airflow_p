@@ -27,11 +27,11 @@ repos:
     - id: poetry-check
 
 
-# - repo: local
-#   hooks:
-#     - id: export-PRODUCTION-requirements
-#       name: Export requirements
-#       language: system
-#       pass_filenames: false
-#       entry: poetry export --without-hashes --without dev --output ./requirements.txt
-#       files: ^(pyproject.toml|poetry.lock)$
+- repo: local
+  hooks:
+    - id: export-PRODUCTION-requirements
+      name: Export requirements
+      language: system
+      pass_filenames: false
+      entry: poetry export --without-hashes --without dev --output ./requirements.txt
+      files: ^(pyproject.toml|poetry.lock)$
