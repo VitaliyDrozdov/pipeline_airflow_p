@@ -1,6 +1,8 @@
 import datetime as dt
 import logging
 
+import pandas as pd
+
 from airflow import DAG
 from airflow.decorators import task
 from funcs.aggregate import (
@@ -12,6 +14,7 @@ from funcs.aggregate import (
 )
 from funcs.clean import clean
 
+SAVE_PATH = "dags/data/test_cleaned.csv"
 logger = logging.getLogger("airflow.task")
 
 default_args = {
@@ -30,26 +33,59 @@ with DAG(
 
     @task
     def clean_data_task():
-        return clean("dags/data/test.csv")
+        return clean(
+            filepath="dags/data/test.csv",
+            new_path=SAVE_PATH,
+        )
 
     @task
-    def analyze_age_task(df):
+    def analyze_age_task(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
         return analyze_age(df)
 
     @task
-    def create_age_ranges_task(df):
+    def create_age_ranges_task(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
         return create_age_ranges(df)
 
     @task
-    def analyze_investment_task(df):
+    def analyze_investment_task(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
         return analyze_investment_by_month(df)
 
     @task
-    def analyze_income_task(df):
+    def analyze_income_task(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
         return analyze_income(df)
 
     @task
-    def analyze_occupation_task(df):
+    def analyze_occupation_task(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
         return analyze_occupation(df)
 
     @task
@@ -59,20 +95,6 @@ with DAG(
             "occupation_counts": occupation_data[0],
             "average_income_by_occupation": occupation_data[1],
         }
-        age_occupation_summary = (
-            age_ranges_df.groupby("Age_Group")
-            .agg(
-                {
-                    "Occupation": lambda x: x.value_counts().index[
-                        0
-                    ],  # Наиболее распространенная профессия
-                    "Annual_Income": "mean",
-                }
-            )
-            .reset_index()
-        )
-
-        combined_results["age_occupation_summary"] = age_occupation_summary
 
         return combined_results
 
@@ -96,12 +118,13 @@ with DAG(
     def end_task():
         pass
 
-    df = clean_data_task()
-    age = analyze_age_task(df)
-    age_ranges = create_age_ranges_task(df)
-    investment = analyze_investment_task(df)
-    income = analyze_income(df)
-    occupation = analyze_occupation_task(df)
+    path = clean_data_task()
+
+    age = analyze_age_task(path)
+    age_ranges = create_age_ranges_task(path)
+    investment = analyze_investment_task(path)
+    income = analyze_income_task(path)
+    occupation = analyze_occupation_task(path)
     step = step_task(age_ranges, occupation)
     t_4a = task_4a()
     t_4b = task_4b()
@@ -109,7 +132,7 @@ with DAG(
     t_5b = task_5b()
     end = end_task()
 
-    df >> [age, income, investment]
+    path >> [age, income, investment]
     age >> age_ranges
     income >> occupation
     [age_ranges, occupation] >> step

@@ -13,32 +13,38 @@ def create_age_ranges(df):
     labels = ["18-25", "26-35", "36-45", "46-55"]
 
     df["Age_Group"] = pd.cut(df["Age"], bins=bins, labels=labels, right=True)
-    return df
+    age_group_counts = df["Age_Group"].value_counts().reset_index()
+    age_group_counts.columns = ["Age_Group", "Count"]
+    return age_group_counts
 
 
 def analyze_income(df):
     return (
         df["Annual_Income"].min(),
         df["Annual_Income"].max(),
-        df.groupby("Age")["Annual_Income"].mean(),
+        df.groupby("Age")["Annual_Income"].mean().astype(int).to_dict(),
     )
 
 
 def analyze_occupation(df):
     # Количество клиентов по профессиям:
-    occupation_counts = df["Occupation"].value_counts()
+    occupation_counts = df["Occupation"].value_counts().to_dict()
     # Средний доход по профессиям:
-    average_income_by_occupation = df.groupby("Occupation")[
-        "Annual_Income"
-    ].mean()
+    average_income_by_occupation = (
+        df.groupby("Occupation")["Annual_Income"].mean().to_dict()
+    )
     return occupation_counts, average_income_by_occupation
 
 
 def analyze_investment_by_month(df):
-    return (
-        df.groupby("Month")["Amount_invested_monthly"].mean().sort_index(),
-        df["Month"].value_counts(),
+    monthly_average = (
+        df.groupby("Month")["Amount_invested_monthly"]
+        .mean()
+        .sort_index()
+        .to_dict()
     )
+    monthly_counts = df["Month"].value_counts().to_dict()
+    return monthly_average, monthly_counts
 
 
 def credit_rating_by_age_range():
