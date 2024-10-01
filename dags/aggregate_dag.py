@@ -3,6 +3,19 @@ import datetime as dt
 from airflow import DAG
 
 # from airflow.decorators import task
+# from funcs.aggregate import (
+#     analyze_age,
+#     analyze_income,
+#     analyze_investment,
+#     analyze_months,
+#     analyze_occupation,
+#     credit_rating_by_age_range,
+#     expenses_by_age_range,
+#     investment_by_month,
+#     load,
+#     occupation_by_age_range,
+#     step,
+# )
 
 default_args = {
     "owner": "airflow",
