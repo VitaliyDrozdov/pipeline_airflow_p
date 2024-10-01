@@ -47,13 +47,38 @@ def analyze_investment_by_month(df):
     return monthly_average, monthly_counts
 
 
-def credit_rating_by_age_range():
-    pass
+def occupation_by_age_range(df):
+    age_ranges_df = df["age_ranges"]
+    # occupation_counts = df["occupation_counts"]
+    occupation_by_age_range = (
+        age_ranges_df.groupby("Age_Group")["Occupation"]
+        .value_counts()
+        .unstack(fill_value=0)
+    )
+    return occupation_by_age_range
 
 
-def occupation_by_age_range():
-    pass
+def analyze_5a(df):
+    occupation_counts = df["Occupation_Count"]
+    total_clients = occupation_counts.sum()
+    occupation_ratio = {
+        occ: count / total_clients * 100
+        for occ, count in zip(df["Occupation"], occupation_counts)
+    }
+
+    return occupation_ratio
 
 
-def expenses_by_age_range():
-    pass
+def analyze_5b(df):
+    # average_income_by_occupation = df["Average_Income"]
+    age_occupation_summary = (
+        df.groupby("Age_Group")
+        .agg(
+            Most_Common_Occupation=(
+                "Occupation",
+                lambda x: x.value_counts().idxmax(),
+            ),  # Наиболее распространенная профессия
+        )
+        .reset_index()
+    )
+    return age_occupation_summary

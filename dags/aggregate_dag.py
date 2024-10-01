@@ -11,10 +11,12 @@ from funcs.aggregate import (
     analyze_investment_by_month,
     analyze_occupation,
     create_age_ranges,
+    analyze_5a,
+    analyze_5b,
 )
 from funcs.clean import clean
 
-SAVE_PATH = "dags/data/test_cleaned.csv"
+SAVE_PATH = "dags/data/test_cleaned"
 logger = logging.getLogger("airflow.task")
 
 default_args = {
@@ -35,7 +37,7 @@ with DAG(
     def clean_data_task():
         return clean(
             filepath="dags/data/test.csv",
-            new_path=SAVE_PATH,
+            new_path=f"{SAVE_PATH}.csv",
         )
 
     @task
@@ -90,29 +92,63 @@ with DAG(
 
     @task
     def step_task(age_ranges_df, occupation_data):
-        combined_results = {
-            "age_ranges": age_ranges_df,
-            "occupation_counts": occupation_data[0],
-            "average_income_by_occupation": occupation_data[1],
-        }
+        # combined_results = {
+        #     "age_ranges": age_ranges_df,
+        #     "occupation_counts": occupation_data[0],
+        #     "average_income_by_occupation": occupation_data[1],
+        # }
+        # age_ranges = pd.DataFrame(age)
+        # return combined_results
+        # combined_results.to_csv(f"{SAVE_PATH}_step.csv", index=False)
+        occupation_counts_df = pd.DataFrame(
+            occupation_data[0].items(),
+            columns=["Occupation", "Occupation_Count"],
+        )
 
-        return combined_results
+        average_income_df = pd.DataFrame(
+            occupation_data[1].items(),
+            columns=["Occupation", "Average_Income"],
+        )
+
+        occupation_summary_df = pd.merge(
+            occupation_counts_df, average_income_df, on="Occupation"
+        )
+
+        combined_df = pd.merge(
+            age_ranges_df, occupation_summary_df, how="cross"
+        )  # Используем cross join для получения всех комбинаций
+        path = f"{SAVE_PATH}_stepv3.csv"
+        combined_df.to_csv(path, index=False)
+
+        return path
 
     @task
     def task_4a():
         pass
 
     @task
-    def task_5a():
-        pass
+    def task_5a(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
+        return analyze_5a(df)
 
     @task
     def task_4b():
         pass
 
     @task
-    def task_5b():
-        pass
+    def task_5b(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
+        return analyze_5b(df)
 
     @task
     def end_task():
@@ -128,8 +164,8 @@ with DAG(
     step = step_task(age_ranges, occupation)
     t_4a = task_4a()
     t_4b = task_4b()
-    t_5a = task_5a()
-    t_5b = task_5b()
+    t_5a = task_5a(step)
+    t_5b = task_5b(step)
     end = end_task()
 
     path >> [age, income, investment]
