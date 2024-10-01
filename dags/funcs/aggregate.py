@@ -16,16 +16,29 @@ def create_age_ranges(df):
     return df
 
 
-def analyze_income():
-    pass
+def analyze_income(df):
+    return (
+        df["Annual_Income"].min(),
+        df["Annual_Income"].max(),
+        df.groupby("Age")["Annual_Income"].mean(),
+    )
 
 
-def analyze_occupation():
-    pass
+def analyze_occupation(df):
+    # Количество клиентов по профессиям:
+    occupation_counts = df["Occupation"].value_counts()
+    # Средний доход по профессиям:
+    average_income_by_occupation = df.groupby("Occupation")[
+        "Annual_Income"
+    ].mean()
+    return occupation_counts, average_income_by_occupation
 
 
-def step():
-    pass
+def analyze_investment_by_month(df):
+    return (
+        df.groupby("Month")["Amount_invested_monthly"].mean().sort_index(),
+        df["Month"].value_counts(),
+    )
 
 
 def credit_rating_by_age_range():
@@ -37,16 +50,4 @@ def occupation_by_age_range():
 
 
 def expenses_by_age_range():
-    pass
-
-
-def analyze_investment():
-    pass
-
-
-def analyze_months():
-    pass
-
-
-def investment_by_month():
     pass

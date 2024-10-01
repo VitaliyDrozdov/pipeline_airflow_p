@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "parallel"
+name = "airflow_project"
 version = "0.1.0"
 description = ""
 authors = ["Vitaliy Drozdov <vitdrzdv@mail.ru>"]
