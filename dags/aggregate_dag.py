@@ -27,7 +27,6 @@ default_args = {
     "retry_delay": dt.timedelta(seconds=30),
 }
 
-
 with DAG(
     dag_id="customer_analysis",
     schedule_interval="@daily",
