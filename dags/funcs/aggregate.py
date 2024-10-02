@@ -58,7 +58,7 @@ def occupation_by_age_range(df):
     return occupation_by_age_range
 
 
-def analyze_5a(df):
+def occupation_ration(df):
     occupation_counts = df["Occupation_Count"]
     total_clients = occupation_counts.sum()
     occupation_ratio = {
@@ -69,8 +69,7 @@ def analyze_5a(df):
     return occupation_ratio
 
 
-def analyze_5b(df):
-    # average_income_by_occupation = df["Average_Income"]
+def get_age_occupation_summary(df):
     age_occupation_summary = (
         df.groupby("Age_Group")
         .agg(
@@ -82,3 +81,21 @@ def analyze_5b(df):
         .reset_index()
     )
     return age_occupation_summary
+
+
+def get_occupation_age_group_summary(df):
+    occupation_age_group_summary = (
+        df.groupby(["Age_Group", "Occupation"])
+        .agg(Count=("Occupation_Count", "sum"))
+        .reset_index()
+    )
+    return occupation_age_group_summary
+
+
+def get_age_income_summary(df):
+    age_income_summary = (
+        df.groupby("Age_Group")
+        .agg(Average_Income=("Average_Income", "mean"))
+        .reset_index()
+    )
+    return age_income_summary

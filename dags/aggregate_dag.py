@@ -11,8 +11,10 @@ from funcs.aggregate import (
     analyze_investment_by_month,
     analyze_occupation,
     create_age_ranges,
-    analyze_5a,
-    analyze_5b,
+    get_occupation_age_group_summary,
+    get_age_income_summary,
+    occupation_ration,
+    get_age_occupation_summary,
 )
 from funcs.clean import clean
 
@@ -92,14 +94,6 @@ with DAG(
 
     @task
     def step_task(age_ranges_df, occupation_data):
-        # combined_results = {
-        #     "age_ranges": age_ranges_df,
-        #     "occupation_counts": occupation_data[0],
-        #     "average_income_by_occupation": occupation_data[1],
-        # }
-        # age_ranges = pd.DataFrame(age)
-        # return combined_results
-        # combined_results.to_csv(f"{SAVE_PATH}_step.csv", index=False)
         occupation_counts_df = pd.DataFrame(
             occupation_data[0].items(),
             columns=["Occupation", "Occupation_Count"],
@@ -123,8 +117,24 @@ with DAG(
         return path
 
     @task
-    def task_4a():
-        pass
+    def task_4a(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
+        return get_occupation_age_group_summary(df)
+
+    @task
+    def task_4b(path):
+        df = pd.read_csv(
+            filepath_or_buffer=path,
+            header=0,
+            delimiter=",",
+            encoding="utf-8",
+        )
+        return get_age_income_summary(df)
 
     @task
     def task_5a(path):
@@ -134,11 +144,7 @@ with DAG(
             delimiter=",",
             encoding="utf-8",
         )
-        return analyze_5a(df)
-
-    @task
-    def task_4b():
-        pass
+        return occupation_ration(df)
 
     @task
     def task_5b(path):
@@ -148,7 +154,7 @@ with DAG(
             delimiter=",",
             encoding="utf-8",
         )
-        return analyze_5b(df)
+        return get_age_occupation_summary(df)
 
     @task
     def end_task():
@@ -162,8 +168,8 @@ with DAG(
     income = analyze_income_task(path)
     occupation = analyze_occupation_task(path)
     step = step_task(age_ranges, occupation)
-    t_4a = task_4a()
-    t_4b = task_4b()
+    t_4a = task_4a(step)
+    t_4b = task_4b(step)
     t_5a = task_5a(step)
     t_5b = task_5b(step)
     end = end_task()
