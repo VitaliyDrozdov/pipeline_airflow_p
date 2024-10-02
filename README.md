@@ -60,7 +60,7 @@ Airflow будет доступен по адресу:
 https://localhost:8080/
 ```
 
-По-умолчанию данны для входа:
+По-умолчанию данные для входа:
 
 login: airflow
 password: airflow
