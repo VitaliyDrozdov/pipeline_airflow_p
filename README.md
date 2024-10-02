@@ -31,7 +31,7 @@
 |---------------|---------------------------------------------------------|
 | `dags`       | Файлы c DAG airflow                                      |
 | `dags/data` | Папка с исходными файлами                                 |
-| `dags/data`     | Вспомогательные функции                               |
+| `dags/funcs`     | Вспомогательные функции                               |
 | `./requirements_dev.txt`     | Зависимости для разработки               |
 | `./requirements.txt`     | Зависимости для docker контейнера            |
 
@@ -49,7 +49,7 @@
 - В папке с проектом запустить Docker контейнеры:
 
 ```text
-docker-compose up
+docker compose up
 ```
 
 </p>
@@ -58,10 +58,10 @@ docker-compose up
 Airflow будет доступен по адресу:
 ```text
 https://localhost:8080/
-
 ```
 
-По-умолчанию:
+По-умолчанию данны для входа:
+
 login: airflow
 password: airflow
 
