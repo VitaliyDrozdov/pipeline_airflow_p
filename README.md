@@ -66,7 +66,7 @@ login: airflow
 
 password: airflow
 
-![Graph](Graph.jpg)
+![Graph](Graph.JPG)
 
 ## Автор :
 
