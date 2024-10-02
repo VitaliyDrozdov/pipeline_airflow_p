@@ -1,6 +1,7 @@
 import datetime as dt
 import logging
-
+import zipfile
+import os
 import pandas as pd
 
 from airflow import DAG
@@ -18,8 +19,26 @@ from funcs.aggregate import (
 )
 from funcs.clean import clean
 
-SAVE_PATH = "dags/data/test_cleaned"
+SAVE_PATH = "dags/data/"
 logger = logging.getLogger("airflow.task")
+
+
+def archive_files(files, archive_name):
+    """Архивирует файлы в ZIP."""
+    with zipfile.ZipFile(archive_name, "w", zipfile.ZIP_DEFLATED) as archive:
+        for file in files:
+            if os.path.exists(file):
+                archive.write(file, os.path.basename(file))
+                logger.info(f"Файл {file} добавлен в архив.")
+            else:
+                logger.warning(f"Файл {file} не найден.")
+
+
+def read(path):
+    return pd.read_csv(
+        filepath_or_buffer=path, header=0, delimiter=",", encoding="utf-8"
+    )
+
 
 default_args = {
     "owner": "airflow",
@@ -27,6 +46,7 @@ default_args = {
     "retries": 3,
     "retry_delay": dt.timedelta(seconds=30),
 }
+
 
 with DAG(
     dag_id="customer_analysis",
@@ -39,57 +59,35 @@ with DAG(
     def clean_data_task():
         return clean(
             filepath="dags/data/test.csv",
-            new_path=f"{SAVE_PATH}.csv",
+            new_path=f"{SAVE_PATH}test_cleaned.csv",
         )
 
     @task
     def analyze_age_task(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return analyze_age(df)
 
     @task
     def create_age_ranges_task(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return create_age_ranges(df)
 
     @task
     def analyze_investment_task(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
+        df = read(path)
+        return analyze_investment_by_month(
+            df,
+            f"{SAVE_PATH}analyze_investment_task.csv",
         )
-        return analyze_investment_by_month(df)
 
     @task
     def analyze_income_task(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return analyze_income(df)
 
     @task
     def analyze_occupation_task(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return analyze_occupation(df)
 
     @task
@@ -110,55 +108,36 @@ with DAG(
 
         combined_df = pd.merge(
             age_ranges_df, occupation_summary_df, how="cross"
-        )  # Используем cross join для получения всех комбинаций
-        path = f"{SAVE_PATH}_stepv3.csv"
+        )  # cross join для получения всех комбинаций
+        path = f"{SAVE_PATH}step.csv"
         combined_df.to_csv(path, index=False)
 
         return path
 
     @task
     def task_4a(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return get_occupation_age_group_summary(df)
 
     @task
     def task_4b(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
-        return get_age_income_summary(df)
+        df = read(path)
+        return get_age_income_summary(df, f"{SAVE_PATH}task_4b.csv")
 
     @task
     def task_5a(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
+        df = read(path)
         return occupation_ration(df)
 
     @task
     def task_5b(path):
-        df = pd.read_csv(
-            filepath_or_buffer=path,
-            header=0,
-            delimiter=",",
-            encoding="utf-8",
-        )
-        return get_age_occupation_summary(df)
+        df = read(path)
+        return get_age_occupation_summary(df, f"{SAVE_PATH}task_5b.csv")
 
     @task
-    def end_task():
-        pass
+    def end_task(*filepaths):
+        archive_path = f"{SAVE_PATH}results.zip"
+        archive_files(filepaths, archive_path)
 
     path = clean_data_task()
 
@@ -167,18 +146,23 @@ with DAG(
     investment = analyze_investment_task(path)
     income = analyze_income_task(path)
     occupation = analyze_occupation_task(path)
-    step = step_task(age_ranges, occupation)
-    t_4a = task_4a(step)
-    t_4b = task_4b(step)
-    t_5a = task_5a(step)
-    t_5b = task_5b(step)
-    end = end_task()
+    step_path = step_task(age_ranges, occupation)
+    t_4a = task_4a(step_path)
+    t_4b = task_4b(step_path)
+    t_5a = task_5a(step_path)
+    t_5b = task_5b(step_path)
+    end = end_task(
+        step_path,
+        f"{SAVE_PATH}task_4b.csv",
+        f"{SAVE_PATH}task_5b.csv",
+        f"{SAVE_PATH}analyze_investment_task.csv",
+    )
 
     path >> [age, income, investment]
     age >> age_ranges
     income >> occupation
-    [age_ranges, occupation] >> step
-    step >> [t_4a, t_5a]
+    [age_ranges, occupation] >> step_path
+    step_path >> [t_4a, t_5a]
     t_4a >> t_4b
     t_5a >> t_5b
     [t_4b, t_5b, investment] >> end

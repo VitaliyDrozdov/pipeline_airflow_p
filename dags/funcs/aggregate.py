@@ -33,10 +33,11 @@ def analyze_occupation(df):
     average_income_by_occupation = (
         df.groupby("Occupation")["Annual_Income"].mean().to_dict()
     )
+
     return occupation_counts, average_income_by_occupation
 
 
-def analyze_investment_by_month(df):
+def analyze_investment_by_month(df, path):
     monthly_average = (
         df.groupby("Month")["Amount_invested_monthly"]
         .mean()
@@ -44,6 +45,17 @@ def analyze_investment_by_month(df):
         .to_dict()
     )
     monthly_counts = df["Month"].value_counts().to_dict()
+    investment_df = pd.DataFrame(
+        {
+            "Month": monthly_average.keys(),
+            "Average_Investment": monthly_average.values(),
+            "Client_Count": [
+                monthly_counts.get(month, 0)
+                for month in monthly_average.keys()
+            ],
+        }
+    )
+    investment_df.to_csv(path, index=False)
     return monthly_average, monthly_counts
 
 
@@ -69,7 +81,7 @@ def occupation_ration(df):
     return occupation_ratio
 
 
-def get_age_occupation_summary(df):
+def get_age_occupation_summary(df, path):
     age_occupation_summary = (
         df.groupby("Age_Group")
         .agg(
@@ -80,6 +92,8 @@ def get_age_occupation_summary(df):
         )
         .reset_index()
     )
+
+    age_occupation_summary.to_csv(path, index=False)
     return age_occupation_summary
 
 
@@ -92,10 +106,11 @@ def get_occupation_age_group_summary(df):
     return occupation_age_group_summary
 
 
-def get_age_income_summary(df):
+def get_age_income_summary(df, path):
     age_income_summary = (
         df.groupby("Age_Group")
         .agg(Average_Income=("Average_Income", "mean"))
         .reset_index()
     )
+    age_income_summary.to_csv(path, index=False)
     return age_income_summary
