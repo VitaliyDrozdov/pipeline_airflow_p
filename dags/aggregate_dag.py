@@ -1,7 +1,4 @@
 import datetime as dt
-import logging
-import zipfile
-import os
 import pandas as pd
 
 from airflow import DAG
@@ -19,25 +16,8 @@ from funcs.aggregate import (
 )
 from funcs.clean import clean
 
-SAVE_PATH = "dags/data/"
-logger = logging.getLogger("airflow.task")
-
-
-def archive_files(files, archive_name):
-    """Архивирует файлы в ZIP."""
-    with zipfile.ZipFile(archive_name, "w", zipfile.ZIP_DEFLATED) as archive:
-        for file in files:
-            if os.path.exists(file):
-                archive.write(file, os.path.basename(file))
-                logger.info(f"Файл {file} добавлен в архив.")
-            else:
-                logger.warning(f"Файл {file} не найден.")
-
-
-def read(path):
-    return pd.read_csv(
-        filepath_or_buffer=path, header=0, delimiter=",", encoding="utf-8"
-    )
+from consts import SAVE_PATH, INITIAL_FILENAME
+from funcs.utils import archive_files, read
 
 
 default_args = {
@@ -58,8 +38,8 @@ with DAG(
     @task
     def clean_data_task():
         return clean(
-            filepath="dags/data/test.csv",
-            new_path=f"{SAVE_PATH}test_cleaned.csv",
+            filepath=f"{SAVE_PATH}{INITIAL_FILENAME}.csv",
+            new_path=f"{SAVE_PATH}{INITIAL_FILENAME}_cleaned.csv",
         )
 
     @task
