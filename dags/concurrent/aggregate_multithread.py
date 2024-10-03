@@ -1,9 +1,10 @@
 import threading
 import sys
 import os
-
-
+import logging
+import time
 from queue import Queue
+
 
 # Создание абсолютного пути для импорта:
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,6 +26,15 @@ from funcs.clean import clean
 from funcs.utils import archive_files, read
 from utils import step_task
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("aggregate_multithread.log"),
+        logging.StreamHandler(),
+    ],
+)
 SAVE_ABS_PATH = os.path.join(project_root, "data")
 
 
@@ -63,6 +73,7 @@ def clean_data(path, newpath):
     Returns:
         DataFrame: Очищенный датафрейм.
     """
+
     return clean(
         filepath=path,
         new_path=newpath,
@@ -71,11 +82,15 @@ def clean_data(path, newpath):
 
 def analyze_data():
     """Выполнение многопоточного скрипта аналогично DAGy."""
-
+    start_time = time.time()
+    logging.info("Начало скрипта...")
+    logging.info("Начало очистки данных...")
     clean_data(FILEPATH, NEW_PATH)
+    logging.info("Создание df...")
     df = read(NEW_PATH)
 
     # Запуск потоков
+    logging.info("Запуск потоков...")
     age_thread, _ = run_in_thread(analyze_age, df)
     age_ranges_thread, q_1 = run_in_thread(create_age_ranges, df)
     income_thread, _ = run_in_thread(analyze_income, df)
@@ -104,6 +119,7 @@ def analyze_data():
     occupation_res = q_3.get()
 
     # Поток step:
+    logging.info("Запуск step...")
     step_thread, step_q = run_in_thread(
         step_task, age_ranges_res, occupation_res
     )
@@ -112,8 +128,10 @@ def analyze_data():
 
     # Датафрейм из step:
     df_2 = read(step_path_result)
+    logging.info("Создание df_2...")
 
     # Запуск потоков
+    logging.info("Запуск второй части потоков...")
     task_4a_thread, _ = run_in_thread(get_occupation_age_group_summary, df_2)
     task_4b_thread, task_4b_q = run_in_thread(
         get_age_income_summary,
@@ -142,6 +160,7 @@ def analyze_data():
     t_5b = task_5b_q.get()
 
     # Архивирование файлов:
+    logging.info("Архивируем результаты...")
     archive_files(
         [
             step_path_result,
@@ -151,6 +170,9 @@ def analyze_data():
         ],
         f"{SAVE_ABS_PATH}\\results.zip",
     )
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logging.info(f" Общее время выполнения: {elapsed_time:.2f} секунд.")
 
 
 if __name__ == "__main__":

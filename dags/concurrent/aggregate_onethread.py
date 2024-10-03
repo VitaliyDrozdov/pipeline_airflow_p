@@ -1,6 +1,8 @@
 import os
 import sys
 import threading
+import logging
+import time
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
@@ -23,6 +25,15 @@ from funcs.clean import clean
 from funcs.utils import archive_files, read
 from utils import step_task
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("aggregate_onethread.log"),
+        logging.StreamHandler(),
+    ],
+)
 SAVE_ABS_PATH = os.path.join(project_root, "data")
 
 
@@ -51,7 +62,11 @@ def clean_data(path, newpath):
 
 
 def analyze_data():
+    start_time = time.time()
+    logging.info("Начало скрипта...")
+    logging.info("Начало очистки данных...")
     clean_data(FILEPATH, NEW_PATH)
+    logging.info("Создание df...")
     df = read(NEW_PATH)
     analyze_age(df)
     age_ranges_res = create_age_ranges(df)
@@ -60,13 +75,16 @@ def analyze_data():
     investment_res = analyze_investment_by_month(
         df, f"{SAVE_ABS_PATH}\\analyze_investment_task.csv"
     )
+    logging.info("Запуск step...")
     step_path_result = step_task(age_ranges_res, occupation_res)
+    logging.info("Создание df_2...")
     df_2 = read(step_path_result)
+    logging.info("Запуск второй части функций...")
     get_occupation_age_group_summary(df_2)
     t_4b = get_age_income_summary(df_2, f"{SAVE_ABS_PATH}\\task_4b.csv")
     occupation_ration(df_2)
     t_5b = get_age_occupation_summary(df_2, f"{SAVE_ABS_PATH}\\task_5b.csv")
-
+    logging.info("Архивируем результаты...")
     archive_files(
         [
             step_path_result,
@@ -76,6 +94,9 @@ def analyze_data():
         ],
         f"{SAVE_ABS_PATH}\\results.zip",
     )
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logging.info(f" Общее время выполнения: {elapsed_time:.2f} секунд.")
 
 
 if __name__ == "__main__":
