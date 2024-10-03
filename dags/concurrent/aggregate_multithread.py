@@ -51,7 +51,7 @@ def clean_data(path, newpath):
     )
 
 
-def analyze_data(path):
+def analyze_data():
     clean_data(FILEPATH, NEW_PATH)
     df = read(NEW_PATH)
 
@@ -120,5 +120,5 @@ def analyze_data(path):
 
 
 if __name__ == "__main__":
-    analyze_data(f"{SAVE_ABS_PATH}\\{INITIAL_FILENAME}.csv")
+    analyze_data()
     print(f"Завершено. Результаты сохранены в {SAVE_ABS_PATH}.")

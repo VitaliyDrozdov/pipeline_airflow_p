@@ -50,7 +50,7 @@ def clean_data(path, newpath):
     )
 
 
-def analyze_data(path):
+def analyze_data():
     clean_data(FILEPATH, NEW_PATH)
     df = read(NEW_PATH)
     analyze_age(df)
@@ -66,59 +66,6 @@ def analyze_data(path):
     occupation_ration(df_2)
     get_age_occupation_summary(df_2, f"{SAVE_ABS_PATH}\\task_5b.csv")
 
-    #     age_thread, res = run_in_thread(analyze_age, df)
-    #     age_thread.join()
-    #     # age_res = res.get()
-
-    #     age_ranges_thread, res = run_in_thread(create_age_ranges, df)
-    #     age_ranges_thread.join()
-    #     age_ranges_res = res.get()
-
-    #     income_thread, res = run_in_thread(analyze_income, df)
-    #     income_thread.join()
-    #     # income_res = res.get()
-
-    #     occupation_thread, res = run_in_thread(analyze_occupation, df)
-    #     occupation_thread.join()
-    #     occupation_res = res.get()
-
-    #     investment_thread, res = run_in_thread(
-    #         analyze_investment_by_month,
-    #         df,
-    #         f"{SAVE_ABS_PATH}\\analyze_investment_task.csv",
-    #     )
-    #     investment_thread.join()
-    #     investment_res = res.get()
-
-    #     step_thread, res = run_in_thread(step_task, age_ranges_res, occupation_res)
-    #     step_thread.join()
-    #     step_path_result = res.get()
-
-    #     task_4a_thread, res = run_in_thread(
-    #         get_occupation_age_group_summary, step_path_result
-    #     )
-    #     task_4a_thread.join()
-    #     # task_4a_result = res.get()
-
-    #     task_4b_thread, res = run_in_thread(
-    #         get_age_income_summary,
-    #         step_path_result,
-    #         f"{SAVE_ABS_PATH}\\task_4b.csv",
-    #     )
-    #     task_4b_thread.join()
-    #     # task_4b_result = res.get()
-
-    #     task_5a_thread, res = run_in_thread(occupation_ration, step_path_result)
-    #     task_5a_thread.join()
-    #     # task_5a_result = res.get()
-
-    #     task_5b_thread, res = run_in_thread(
-    #         get_age_occupation_summary,
-    #         step_path_result,
-    #         f"{SAVE_ABS_PATH}\\task_5b.csv",
-    #     )
-    #     task_5b_thread.join()
-    #     # task_5b_result = res.get()
     archive_files(
         [
             step_path_result,
@@ -131,5 +78,5 @@ def analyze_data(path):
 
 
 if __name__ == "__main__":
-    analyze_data(f"{SAVE_ABS_PATH}\\{INITIAL_FILENAME}.csv")
+    analyze_data()
     print(f"Завершено. Результаты сохранены в {SAVE_ABS_PATH}.")
