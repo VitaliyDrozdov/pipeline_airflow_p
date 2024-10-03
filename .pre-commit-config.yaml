@@ -18,13 +18,16 @@ repos:
   rev: 5.13.2
   hooks:
     - id: isort
-      exclude: '(aggregate_dag.py|aggregate_multithread.py)'
+      exclude: '(aggregate_dag.py|aggregate_multithread.py|aggregate_onethread.py)'
 
 
 - repo: https://github.com/PyCQA/flake8
   rev: 7.0.0
   hooks:
     - id: flake8
+      exclude: aggregate_onethread.py
+
+
 
 - repo: https://github.com/python-poetry/poetry
   rev: 1.5.1

@@ -1,8 +1,14 @@
 import threading
+import sys
+import os
+
+
 from queue import Queue
 
-from aggregate_dag import step_task
-from consts import INITIAL_FILENAME, SAVE_PATH
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(project_root)
+
+from consts import INITIAL_FILENAME
 from funcs.aggregate import (
     analyze_age,
     analyze_income,
@@ -16,6 +22,9 @@ from funcs.aggregate import (
 )
 from funcs.clean import clean
 from funcs.utils import archive_files, read
+from utils import step_task
+
+SAVE_ABS_PATH = os.path.join(project_root, "data")
 
 
 def run_in_thread(func, *args):
@@ -31,16 +40,20 @@ def run_in_thread(func, *args):
     return thread, q
 
 
-def clean_data():
+FILEPATH = f"{SAVE_ABS_PATH}\\{INITIAL_FILENAME}.csv"
+NEW_PATH = f"{SAVE_ABS_PATH}\\{INITIAL_FILENAME}_cleaned.csv"
+
+
+def clean_data(path, newpath):
     return clean(
-        filepath=f"{SAVE_PATH}{INITIAL_FILENAME}.csv",
-        new_path=f"{SAVE_PATH}{INITIAL_FILENAME}_cleaned.csv",
+        filepath=path,
+        new_path=newpath,
     )
 
 
 def analyze_data(path):
-    df = read(path)
-    clean_data()
+    clean_data(FILEPATH, NEW_PATH)
+    df = read(NEW_PATH)
 
     age_thread, res = run_in_thread(analyze_age, df)
     age_thread.join()
@@ -61,7 +74,7 @@ def analyze_data(path):
     investment_thread, res = run_in_thread(
         analyze_investment_by_month,
         df,
-        f"{SAVE_PATH}analyze_investment_task.csv",
+        f"{SAVE_ABS_PATH}\\analyze_investment_task.csv",
     )
     investment_thread.join()
     investment_res = res.get()
@@ -77,7 +90,9 @@ def analyze_data(path):
     # task_4a_result = res.get()
 
     task_4b_thread, res = run_in_thread(
-        get_age_income_summary, step_path_result, f"{SAVE_PATH}task_4b.csv"
+        get_age_income_summary,
+        step_path_result,
+        f"{SAVE_ABS_PATH}\\task_4b.csv",
     )
     task_4b_thread.join()
     # task_4b_result = res.get()
@@ -87,22 +102,23 @@ def analyze_data(path):
     # task_5a_result = res.get()
 
     task_5b_thread, res = run_in_thread(
-        get_age_occupation_summary, step_path_result, f"{SAVE_PATH}task_5b.csv"
+        get_age_occupation_summary,
+        step_path_result,
+        f"{SAVE_ABS_PATH}\\task_5b.csv",
     )
     task_5b_thread.join()
     # task_5b_result = res.get()
-
     archive_files(
         [
             step_path_result,
-            f"{SAVE_PATH}task_4b.csv",
-            f"{SAVE_PATH}task_5b.csv",
+            f"{SAVE_ABS_PATH}\\task_4b.csv",
+            f"{SAVE_ABS_PATH}\\task_5b.csv",
             investment_res,
         ],
-        f"{SAVE_PATH}results.zip",
+        f"{SAVE_ABS_PATH}\\results.zip",
     )
 
 
 if __name__ == "__main__":
-    analyze_data(f"{SAVE_PATH}{INITIAL_FILENAME}.csv")
-    print(f"Завершено. Результаты сохранены в {SAVE_PATH}.")
+    analyze_data(f"{SAVE_ABS_PATH}\\{INITIAL_FILENAME}.csv")
+    print(f"Завершено. Результаты сохранены в {SAVE_ABS_PATH}.")
