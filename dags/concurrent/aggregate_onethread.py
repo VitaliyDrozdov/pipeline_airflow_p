@@ -55,6 +55,7 @@ def analyze_data():
     df = read(NEW_PATH)
     analyze_age(df)
     age_ranges_res = create_age_ranges(df)
+    analyze_income(df)
     occupation_res = analyze_occupation(df)
     investment_res = analyze_investment_by_month(
         df, f"{SAVE_ABS_PATH}\\analyze_investment_task.csv"
@@ -62,15 +63,15 @@ def analyze_data():
     step_path_result = step_task(age_ranges_res, occupation_res)
     df_2 = read(step_path_result)
     get_occupation_age_group_summary(df_2)
-    get_age_income_summary(df_2, f"{SAVE_ABS_PATH}\\task_4b.csv")
+    t_4b = get_age_income_summary(df_2, f"{SAVE_ABS_PATH}\\task_4b.csv")
     occupation_ration(df_2)
-    get_age_occupation_summary(df_2, f"{SAVE_ABS_PATH}\\task_5b.csv")
+    t_5b = get_age_occupation_summary(df_2, f"{SAVE_ABS_PATH}\\task_5b.csv")
 
     archive_files(
         [
             step_path_result,
-            f"{SAVE_ABS_PATH}\\task_4b.csv",
-            f"{SAVE_ABS_PATH}\\task_5b.csv",
+            t_4b,
+            t_5b,
             investment_res,
         ],
         f"{SAVE_ABS_PATH}\\results.zip",
