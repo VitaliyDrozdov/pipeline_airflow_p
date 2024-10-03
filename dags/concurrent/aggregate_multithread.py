@@ -56,58 +56,67 @@ def analyze_data():
     df = read(NEW_PATH)
 
     age_thread, _ = run_in_thread(analyze_age, df)
-    age_thread.join()
-    # age_res = q.get()
-
-    age_ranges_thread, q = run_in_thread(create_age_ranges, df)
-    age_ranges_thread.join()
-    age_ranges_res = q.get()
-
+    age_ranges_thread, q_1 = run_in_thread(create_age_ranges, df)
     income_thread, _ = run_in_thread(analyze_income, df)
-    income_thread.join()
-    # income_res = q.get()
-
-    occupation_thread, q = run_in_thread(analyze_occupation, df)
-    occupation_thread.join()
-    occupation_res = q.get()
-
-    investment_thread, q = run_in_thread(
+    investment_thread, q_2 = run_in_thread(
         analyze_investment_by_month,
         df,
         f"{SAVE_ABS_PATH}\\analyze_investment_task.csv",
     )
-    investment_thread.join()
-    investment_res = q.get()
+    occupation_thread, q_3 = run_in_thread(analyze_occupation, df)
 
-    step_thread, q = run_in_thread(step_task, age_ranges_res, occupation_res)
+    threads = [
+        age_thread,
+        age_ranges_thread,
+        income_thread,
+        investment_thread,
+        occupation_thread,
+    ]
+
+    for thread in threads:
+        thread.join()
+
+    age_ranges_res = q_1.get()
+    investment_res = q_2.get()
+    occupation_res = q_3.get()
+
+    step_thread, step_q = run_in_thread(
+        step_task, age_ranges_res, occupation_res
+    )
     step_thread.join()
-    step_path_result = q.get()
+    step_path_result = step_q.get()
 
     df_2 = read(step_path_result)
 
     task_4a_thread, _ = run_in_thread(get_occupation_age_group_summary, df_2)
-    task_4a_thread.join()
-    # task_4a_result = q.get()
-
-    task_4b_thread, q = run_in_thread(
+    task_4b_thread, task_4b_q = run_in_thread(
         get_age_income_summary,
         df_2,
         f"{SAVE_ABS_PATH}\\task_4b.csv",
     )
-    task_4b_thread.join()
-    t_4b = q.get()
-
     task_5a_thread, _ = run_in_thread(occupation_ration, df_2)
-    task_5a_thread.join()
-    # task_5a_result = q.get()
-
-    task_5b_thread, q = run_in_thread(
+    task_5b_thread, tas_5b_q = run_in_thread(
         get_age_occupation_summary,
         df_2,
         f"{SAVE_ABS_PATH}\\task_5b.csv",
     )
+
+    task_4a_thread.join()
+    task_4b_thread.join()
+    task_5a_thread.join()
     task_5b_thread.join()
-    t_5b = q.get()
+
+    task_threads = [
+        task_4a_thread,
+        task_4b_thread,
+        task_5a_thread,
+        task_5b_thread,
+    ]
+    for thread in task_threads:
+        thread.join()
+
+    t_4b = task_4b_q.get()
+    t_5b = tas_5b_q.get()
 
     archive_files(
         [
