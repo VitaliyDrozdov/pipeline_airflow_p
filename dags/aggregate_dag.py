@@ -1,24 +1,22 @@
 import datetime as dt
-import pandas as pd
 
+import pandas as pd
 from airflow import DAG
 from airflow.decorators import task
-
+from consts import INITIAL_FILENAME, SAVE_PATH
 from funcs.aggregate import (
     analyze_age,
     analyze_income,
     analyze_investment_by_month,
     analyze_occupation,
     create_age_ranges,
-    get_occupation_age_group_summary,
     get_age_income_summary,
-    occupation_ration,
     get_age_occupation_summary,
+    get_occupation_age_group_summary,
+    occupation_ration,
 )
 from funcs.clean import clean
 from funcs.utils import archive_files, read
-from consts import SAVE_PATH, INITIAL_FILENAME
-
 
 default_args = {
     "owner": "airflow",
@@ -86,6 +84,7 @@ with DAG(
         Возвращает:
         dict: Средние инвестиции по месяцам.
         """
+
         df = read(path)
         return analyze_investment_by_month(
             df,
@@ -103,7 +102,6 @@ with DAG(
         Возвращает:
         tuple: Мин и макс доход, словарь средних доходов по возрасту.
         """
-
         df = read(path)
         return analyze_income(df)
 
@@ -167,6 +165,7 @@ with DAG(
         Возвращает:
         pd.DataFrame: Сводная таблица с количеством клиентов по профессиям.
         """
+
         df = read(path)
         return get_occupation_age_group_summary(df)
 
@@ -181,6 +180,7 @@ with DAG(
         Возвращает:
         pd.DataFrame: Сводная таблица со средним доходом по возрастным группам.
         """
+
         df = read(path)
         return get_age_income_summary(df, f"{SAVE_PATH}task_4b.csv")
 
@@ -226,7 +226,6 @@ with DAG(
 
     # Основной поток выполнения
     path = clean_data_task()
-
     age = analyze_age_task(path)
     age_ranges = create_age_ranges_task(path)
     investment = analyze_investment_task(path)

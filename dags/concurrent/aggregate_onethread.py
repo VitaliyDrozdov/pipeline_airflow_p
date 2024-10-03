@@ -1,7 +1,7 @@
+import logging
 import os
 import sys
 import threading
-import logging
 import time
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,12 +25,11 @@ from funcs.clean import clean
 from funcs.utils import archive_files, read
 from utils import step_task
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("aggregate_onethread.log"),
+        logging.FileHandler("aggregate_onethread.log", mode="w"),
         logging.StreamHandler(),
     ],
 )

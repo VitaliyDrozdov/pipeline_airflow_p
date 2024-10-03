@@ -18,7 +18,7 @@ repos:
   rev: 5.13.2
   hooks:
     - id: isort
-      exclude: '(aggregate_dag.py|aggregate_multithread.py|aggregate_onethread.py)'
+      exclude: '(aggregate_dag.py|aggregate_multithread.py|aggregate_onethread.py|aggregate_multiprocess.py)'
 
 
 - repo: https://github.com/PyCQA/flake8

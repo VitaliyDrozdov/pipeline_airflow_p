@@ -1,10 +1,9 @@
-import threading
-import sys
-import os
 import logging
+import os
+import sys
+import threading
 import time
 from queue import Queue
-
 
 # Создание абсолютного пути для импорта:
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -26,12 +25,11 @@ from funcs.clean import clean
 from funcs.utils import archive_files, read
 from utils import step_task
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("aggregate_multithread.log"),
+        logging.FileHandler("aggregate_multithread.log", mode="w"),
         logging.StreamHandler(),
     ],
 )
@@ -126,9 +124,9 @@ def analyze_data():
     step_thread.join()
     step_path_result = step_q.get()
 
-    # Датафрейм из step:
-    df_2 = read(step_path_result)
     logging.info("Создание df_2...")
+    df_2 = read(step_path_result)
+    # Датафрейм из step:
 
     # Запуск потоков
     logging.info("Запуск второй части потоков...")
