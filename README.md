@@ -79,6 +79,7 @@ python dags/concurrent/aggregate_multithread.py
 python dags/concurrent/aggregate_multiprocess.py
 ```
 
+Схема pipeline:
 
 ![Graph](Graph.JPG)
 
