@@ -1,5 +1,5 @@
 
-<h1 align="center"> Airflow pipeline с параллельными задачами </h1>
+<h1 align="center"> Airflow pipeline и скрипты с параллельными задачами </h1>
 
 
 <hr>
@@ -34,6 +34,10 @@
 | `dags/funcs`     | Вспомогательные функции                               |
 | `./requirements_dev.txt`     | Зависимости для разработки               |
 | `./requirements.txt`     | Зависимости для docker контейнера            |
+| `dags/concurrent`     | Скрипты с применением multiprocessing, threading (аналог DAG)           |
+| `./logs_test`     | Примеры логов     |
+
+
 
 
 
@@ -65,6 +69,16 @@ https://localhost:8080/
 login: airflow
 
 password: airflow
+
+Для запуска скриптов в папке concurrent:
+
+```
+python dags/concurrent/aggregate_multithread.py
+```
+```
+python dags/concurrent/aggregate_multiprocess.py
+```
+
 
 ![Graph](Graph.JPG)
 
